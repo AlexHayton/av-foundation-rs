@@ -8,6 +8,14 @@ use objc2_foundation::{NSArray, NSError, NSInteger, NSObject, NSObjectProtocol, 
 
 use crate::{capture_session_preset::AVCaptureSessionPreset, media_format::AVMediaType};
 
+#[link(name = "AVFoundation", kind = "framework")]
+extern "C" {
+    pub static AVCaptureLensPositionCurrent: &'static f32;
+    pub static AVCaptureExposureTargetBiasCurrent: &'static f32;
+    pub static AVCaptureExposureDurationCurrent: &'static CMTime;
+    pub static AVCaptureISOCurrent: &'static f32;
+}
+
 extern "C" {
     pub static AVCaptureDeviceWasConnectedNotification: &'static NSString;
     pub static AVCaptureDeviceWasDisconnectedNotification: &'static NSString;
@@ -185,6 +193,15 @@ extern "C" {
     #[cfg(target_os = "ios")]
     pub static AVCaptureDeviceTypeBuiltInDuoCamera: &'static AVCaptureDeviceType;
     pub static AVCaptureDeviceTypeBuiltInMicrophone: &'static AVCaptureDeviceType;
+}
+
+#[allow(non_snake_case)]
+#[derive(Copy, Clone, Debug, PartialOrd, PartialEq)]
+#[repr(C)]
+pub struct AVCaptureWhiteBalanceGains {
+    pub blueGain: f32,
+    pub greenGain: f32,
+    pub redGain: f32,
 }
 
 impl AVCaptureDevice {
