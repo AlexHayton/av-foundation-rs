@@ -1,12 +1,20 @@
+use std::{ptr::NonNull, sync::Arc};
+
+use block2::{Block, RcBlock, StackBlock};
 use core_foundation::base::TCFType;
 use core_media::{
     format_description::{CMFormatDescription, CMFormatDescriptionRef},
     time::CMTime,
 };
-use objc2::{extern_class, msg_send, msg_send_id, mutability::InteriorMutable, rc::Id, ClassType};
+use objc2::{
+    extern_class, ffi::BOOL, msg_send, msg_send_id, mutability::InteriorMutable, rc::Id,
+    runtime::Bool, ClassType,
+};
 use objc2_foundation::{NSArray, NSError, NSInteger, NSObject, NSObjectProtocol, NSString};
 
-use crate::{capture_session_preset::AVCaptureSessionPreset, media_format::AVMediaType};
+use crate::{
+    capture_session_preset::AVCaptureSessionPreset, media_format::AVMediaType, util::Movable,
+};
 
 extern "C" {
     pub static AVCaptureDeviceWasConnectedNotification: &'static NSString;
@@ -80,6 +88,29 @@ impl AVCaptureDevice {
 
     pub fn unlock_for_configuration(&self) {
         unsafe { msg_send![self, unlockForConfiguration] }
+    }
+
+    pub fn request_access_for_media_type<F>(&self, media_type: &AVMediaType, handler: F)
+    where
+        F: Fn(Box<dyn Fn(Bool, Option<&NSError>) + 'static + Send>) -> Option<Id<NSProgress>>
+            + 'static
+            + Send,
+    {
+        run_on_main(|marker| {
+            info!("start vm");
+            let vm = vm.get(marker);
+            let block = &StackBlock::new(|err: *mut NSError| {
+                if err.is_null() {
+                    info!("vm started");
+                } else {
+                    error!("vm failed to start, error={}", unsafe { (*err).localizedDescription() });
+                    process::exit(1);
+                }
+            });
+            unsafe {
+                vm.startWithCompletionHandler(block);
+            }
+        });
     }
 
     pub fn supports_av_capture_session_preset(&self, preset: &AVCaptureSessionPreset) -> bool {
@@ -197,7 +228,9 @@ impl AVCaptureDevice {
         media_type: &AVMediaType,
         position: AVCaptureDevicePosition,
     ) -> Option<Id<AVCaptureDevice>> {
-        unsafe { msg_send_id![AVCaptureDevice::class(), defaultDeviceWithDeviceType: device_type mediaType: media_type position: position] }
+        unsafe {
+            msg_send_id![AVCaptureDevice::class(), defaultDeviceWithDeviceType: device_type mediaType: media_type position: position]
+        }
     }
 }
 

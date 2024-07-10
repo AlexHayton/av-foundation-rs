@@ -3,7 +3,9 @@ use av_foundation::{
     capture_input::AVCaptureDeviceInput,
     capture_output_base::AVCaptureOutput,
     capture_session::{AVCaptureConnection, AVCaptureSession},
-    capture_video_data_output::{AVCaptureVideoDataOutput, AVCaptureVideoDataOutputSampleBufferDelegate},
+    capture_video_data_output::{
+        AVCaptureVideoDataOutput, AVCaptureVideoDataOutputSampleBufferDelegate,
+    },
     media_format::AVMediaTypeVideo,
 };
 use core_foundation::base::TCFType;
@@ -70,7 +72,9 @@ extern_methods!(
 
 fn main() {
     let session = AVCaptureSession::new();
-    let device: Id<AVCaptureDevice> = unsafe { AVCaptureDevice::default_device_with_media_type(AVMediaTypeVideo).unwrap() };
+    let device: Id<AVCaptureDevice> =
+        unsafe { AVCaptureDevice::default_device_with_media_type(AVMediaTypeVideo).unwrap() };
+    unsafe { device.request_access_for_media_type(AVMediaTypeVideo) };
     let input = AVCaptureDeviceInput::from_device(&device).unwrap();
     let output = AVCaptureVideoDataOutput::new();
     let delegate = Delegate::new();

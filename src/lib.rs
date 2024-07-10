@@ -27,3 +27,4 @@ pub mod capture_session_preset;
 pub mod capture_video_data_output;
 pub mod media_format;
 pub mod video_settings;
+mod util;

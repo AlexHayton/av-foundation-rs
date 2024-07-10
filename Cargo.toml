@@ -12,6 +12,7 @@ keywords = ["avfoundation", "camera", "capture"]
 edition = "2018"
 
 [dependencies]
+block2 = "0.5.1"
 core-foundation = { version = "0.9", default-features = false }
 core-media = { version = "0.4", default-features = false, features = ["objc"] }
 core-video = { version = "0.3", default-features = false, features = ["objc"] }
