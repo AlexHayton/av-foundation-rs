@@ -3,10 +3,16 @@ use core_media::{
     format_description::{CMFormatDescription, CMFormatDescriptionRef},
     time::CMTime,
 };
-use objc2::{extern_class, msg_send, msg_send_id, mutability::InteriorMutable, rc::Id, ClassType};
+use objc2::{
+    extern_class, msg_send, msg_send_id, mutability::InteriorMutable, rc::Id, ClassType, Encode,
+    Encoding,
+};
 use objc2_foundation::{NSArray, NSError, NSInteger, NSObject, NSObjectProtocol, NSString};
 
-use crate::{capture_session_preset::AVCaptureSessionPreset, media_format::AVMediaType};
+use crate::{
+    capture_session_preset::AVCaptureSessionPreset,
+    media_format::{AVMediaType, AVMediaTypeVideo},
+};
 
 #[link(name = "AVFoundation", kind = "framework")]
 extern "C" {
@@ -165,6 +171,19 @@ impl AVCaptureDevice {
     }
 }
 
+#[derive(Copy, Clone, Debug, Hash, Ord, PartialOrd, Eq, PartialEq)]
+#[repr(isize)]
+pub enum AVAuthorizationStatus {
+    NotDetermined = 0,
+    Restricted = 1,
+    Denied = 2,
+    Authorized = 3,
+}
+
+unsafe impl Encode for AVAuthorizationStatus {
+    const ENCODING: Encoding = Encoding::Struct("AVAuthorizationStatus", &[isize::ENCODING]);
+}
+
 pub type AVCaptureDeviceType = NSString;
 
 extern "C" {
@@ -214,7 +233,16 @@ impl AVCaptureDevice {
         media_type: &AVMediaType,
         position: AVCaptureDevicePosition,
     ) -> Option<Id<AVCaptureDevice>> {
-        unsafe { msg_send_id![AVCaptureDevice::class(), defaultDeviceWithDeviceType: device_type mediaType: media_type position: position] }
+        unsafe {
+            msg_send_id![AVCaptureDevice::class(), defaultDeviceWithDeviceType: device_type mediaType: media_type position: position]
+        }
+    }
+
+    pub fn current_authorization_status() -> AVAuthorizationStatus {
+        let status: AVAuthorizationStatus = unsafe {
+            msg_send![AVCaptureDevice::class(), authorizationStatusForMediaType: AVMediaTypeVideo]
+        };
+        status
     }
 }
 
@@ -227,6 +255,11 @@ impl AVCaptureDevice {
     #[cfg(target_os = "ios")]
     pub fn is_video_hdr_enabled(&self) -> bool {
         unsafe { msg_send![self, isVideoHDREnabled] }
+    }
+
+    #[cfg(target_os = "ios")]
+    pub fn exposure_duration() -> CMTime {
+        unsafe { msg_send![self, exposureDuration] }
     }
 }
 
