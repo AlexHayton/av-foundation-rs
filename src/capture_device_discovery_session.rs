@@ -1,12 +1,11 @@
 use objc2::{
-    extern_class, msg_send, msg_send_id, mutability::InteriorMutable, rc::Id, ClassType, Encode,
-    Encoding,
+    extern_class, msg_send_id, mutability::InteriorMutable, rc::Id, ClassType
 };
 use objc2_foundation::{NSArray, NSObject, NSObjectProtocol};
 
 use crate::{
     capture_device::{AVCaptureDevice, AVCaptureDevicePosition, AVCaptureDeviceType},
-    media_format::{AVMediaType, AVMediaTypeVideo},
+    media_format::AVMediaType,
 };
 
 extern_class!(
@@ -23,13 +22,14 @@ unsafe impl NSObjectProtocol for AVCaptureDeviceDiscoverySession {}
 
 impl AVCaptureDeviceDiscoverySession {
     pub fn init(
-        device_types: NSArray<AVCaptureDeviceType>,
-        media_type: AVMediaType,
+        &self,
+        device_types: &NSArray<AVCaptureDeviceType>,
+        media_type: &AVMediaType,
         position: AVCaptureDevicePosition,
     ) -> Id<Self> {
         unsafe {
             msg_send_id![
-                AVCaptureDeviceDiscoverySession::class(),
+               self,
                 discoverySessionWithDeviceTypes:device_types
                 mediaType:media_type
                 position:position
