@@ -8,8 +8,8 @@ use av_foundation::{
 use objc2_foundation::NSArray;
 
 fn main() {
-    let device_types = NSArray::new();
-    unsafe { device_types.arrayByAddingObject(AVCaptureDeviceTypeBuiltInWideAngleCamera) };
+    let empty_array = NSArray::new();
+    let device_types = unsafe { empty_array.arrayByAddingObject(AVCaptureDeviceTypeBuiltInWideAngleCamera) };
     let discovery_session = unsafe {
         AVCaptureDeviceDiscoverySession::discovery_session_with_device_types(
             &device_types,
@@ -18,7 +18,6 @@ fn main() {
         )
     };
     let devices = discovery_session.devices();
-    println!("devices: {:?}", devices);
     devices.iter().for_each(|device| {
         println!("device: {:?}", device);
     });
