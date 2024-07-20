@@ -4,7 +4,9 @@ use core_media::{
     time::CMTime,
 };
 use objc2::{extern_class, msg_send, msg_send_id, mutability::InteriorMutable, rc::Id, ClassType};
-use objc2_foundation::{NSArray, NSError, NSInteger, NSObject, NSObjectProtocol, NSString};
+use objc2_foundation::{
+    CGPoint, NSArray, NSError, NSInteger, NSObject, NSObjectProtocol, NSString,
+};
 
 use crate::{capture_session_preset::AVCaptureSessionPreset, media_format::AVMediaType};
 
@@ -195,6 +197,59 @@ extern "C" {
     pub static AVCaptureDeviceTypeBuiltInMicrophone: &'static AVCaptureDeviceType;
 }
 
+pub type AVCaptureExposureMode = NSInteger;
+pub const AVCaptureExposureModeLocked: AVCaptureExposureMode = 0;
+pub const AVCaptureExposureModeAutoExpose: AVCaptureExposureMode = 1;
+pub const AVCaptureExposureModeContinuousAutoExposure: AVCaptureExposureMode = 2;
+pub const AVCaptureExposureModeCustom: AVCaptureExposureMode = 3;
+
+impl AVCaptureDevice {
+    pub fn is_exposure_mode_supported(&self, exposure_mode: AVCaptureExposureMode) -> bool {
+        unsafe { msg_send![self, isExposureModeSupported: exposure_mode] }
+    }
+
+    pub fn is_exposure_point_of_interest_supported(&self) -> bool {
+        unsafe { msg_send![self, isExposurePointOfInterestSupported] }
+    }
+
+    #[cfg(target_os = "ios")]
+    pub fn exposure_duration() -> CMTime {
+        unsafe { msg_send![self, exposureDuration] }
+    }
+
+    pub fn exposure_point_of_interest(&self) -> CGPoint {
+        unsafe { msg_send![self, exposurePointOfInterest] }
+    }
+
+    pub fn set_exposure_point_of_interest(&self, point: CGPoint) -> CGPoint {
+        unsafe { msg_send![self, exposurePointOfInterest: point] }
+    }
+}
+
+pub type AVCaptureFocusMode = NSInteger;
+pub const AVCaptureFocusModeLocked: AVCaptureFocusMode = 0;
+pub const AVCaptureFocusModeAutoFocus: AVCaptureFocusMode = 1;
+pub const AVCaptureFocusModeContinuousAutoFocus: AVCaptureFocusMode = 2;
+
+impl AVCaptureDevice {
+    pub fn is_focus_mode_supported(&self, focus_mode: AVCaptureFocusMode) -> bool {
+        unsafe { msg_send![self, isFocusModeSupported: focus_mode] }
+    }
+
+    pub fn focus_mode(&self) -> AVCaptureFocusMode {
+        unsafe { msg_send![self, focusMode] }
+    }
+
+    pub fn set_focus_mode(&self, focus_mode: AVCaptureFocusMode) -> AVCaptureFocusMode {
+        unsafe { msg_send![self, focusMode: focus_mode] }
+    }
+}
+
+pub type AVCaptureWhiteBalanceMode = NSInteger;
+pub const AVCaptureWhiteBalanceModeLocked: AVCaptureWhiteBalanceMode = 0;
+pub const AVCaptureWhiteBalanceModeAutoWhiteBalance: AVCaptureWhiteBalanceMode = 1;
+pub const AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance: AVCaptureWhiteBalanceMode = 2;
+
 #[allow(non_snake_case)]
 #[derive(Copy, Clone, Debug, PartialOrd, PartialEq)]
 #[repr(C)]
@@ -202,6 +257,26 @@ pub struct AVCaptureWhiteBalanceGains {
     pub blueGain: f32,
     pub greenGain: f32,
     pub redGain: f32,
+}
+
+impl AVCaptureDevice {
+    pub fn is_white_balance_mode_supported(
+        &self,
+        white_balance_mode: AVCaptureWhiteBalanceMode,
+    ) -> bool {
+        unsafe { msg_send![self, isWhiteBalanceModeSupported: white_balance_mode] }
+    }
+
+    pub fn white_balance_mode(&self) -> AVCaptureWhiteBalanceMode {
+        unsafe { msg_send![self, whiteBalanceMode] }
+    }
+
+    pub fn set_white_balance_mode(
+        &self,
+        white_balance_mode: AVCaptureWhiteBalanceMode,
+    ) -> AVCaptureWhiteBalanceMode {
+        unsafe { msg_send![self, whiteBalanceMode: white_balance_mode] }
+    }
 }
 
 impl AVCaptureDevice {
@@ -214,7 +289,9 @@ impl AVCaptureDevice {
         media_type: &AVMediaType,
         position: AVCaptureDevicePosition,
     ) -> Option<Id<AVCaptureDevice>> {
-        unsafe { msg_send_id![AVCaptureDevice::class(), defaultDeviceWithDeviceType: device_type mediaType: media_type position: position] }
+        unsafe {
+            msg_send_id![AVCaptureDevice::class(), defaultDeviceWithDeviceType: device_type mediaType: media_type position: position]
+        }
     }
 }
 
@@ -227,6 +304,16 @@ impl AVCaptureDevice {
     #[cfg(target_os = "ios")]
     pub fn is_video_hdr_enabled(&self) -> bool {
         unsafe { msg_send![self, isVideoHDREnabled] }
+    }
+
+    #[cfg(target_os = "ios")]
+    pub fn automatically_adjusts_face_driven_auto_exposure_enabled(&self) -> bool {
+        unsafe { msg_send![self, automaticallyAdjustsFaceDrivenAutoExposureEnabled] }
+    }
+
+    #[cfg(target_os = "ios")]
+    pub fn set_automatically_adjusts_face_driven_auto_exposure_enabled(&self, value: bool) -> bool {
+        unsafe { msg_send![self, automaticallyAdjustsFaceDrivenAutoExposureEnabled: value] }
     }
 }
 
