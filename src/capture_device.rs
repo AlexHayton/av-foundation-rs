@@ -3,12 +3,18 @@ use core_media::{
     format_description::{CMFormatDescription, CMFormatDescriptionRef},
     time::CMTime,
 };
-use objc2::{extern_class, msg_send, msg_send_id, mutability::InteriorMutable, rc::Id, ClassType, Encode, Encoding, RefEncode};
 use objc2_foundation::{
     CGFloat, CGPoint, NSArray, NSError, NSInteger, NSObject, NSObjectProtocol, NSString
 };
+use objc2::{
+    extern_class, msg_send, msg_send_id, mutability::InteriorMutable, rc::Id, ClassType, Encode,
+    Encoding,
+};
 
-use crate::{capture_session_preset::AVCaptureSessionPreset, media_format::AVMediaType};
+use crate::{
+    capture_session_preset::AVCaptureSessionPreset,
+    media_format::{AVMediaType, AVMediaTypeVideo},
+};
 
 #[link(name = "AVFoundation", kind = "framework")]
 extern "C" {
@@ -166,6 +172,19 @@ impl AVCaptureDevice {
     pub fn position(&self) -> AVCaptureDevicePosition {
         unsafe { msg_send![self, position] }
     }
+}
+
+#[derive(Copy, Clone, Debug, Hash, Ord, PartialOrd, Eq, PartialEq)]
+#[repr(isize)]
+pub enum AVAuthorizationStatus {
+    NotDetermined = 0,
+    Restricted = 1,
+    Denied = 2,
+    Authorized = 3,
+}
+
+unsafe impl Encode for AVAuthorizationStatus {
+    const ENCODING: Encoding = Encoding::Struct("AVAuthorizationStatus", &[isize::ENCODING]);
 }
 
 pub type AVCaptureDeviceType = NSString;
@@ -510,6 +529,13 @@ impl AVCaptureDevice {
         unsafe {
             msg_send_id![AVCaptureDevice::class(), defaultDeviceWithDeviceType: device_type mediaType: media_type position: position]
         }
+    }
+
+    pub fn current_authorization_status() -> AVAuthorizationStatus {
+        let status: AVAuthorizationStatus = unsafe {
+            msg_send![AVCaptureDevice::class(), authorizationStatusForMediaType: AVMediaTypeVideo]
+        };
+        status
     }
 }
 
