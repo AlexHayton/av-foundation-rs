@@ -3,12 +3,12 @@ use core_media::{
     format_description::{CMFormatDescription, CMFormatDescriptionRef, CMVideoFormatDescription},
     time::CMTime,
 };
-use objc2_foundation::{
-    CGFloat, CGPoint, NSArray, NSError, NSInteger, NSObject, NSObjectProtocol, NSString
-};
 use objc2::{
     extern_class, msg_send, msg_send_id, mutability::InteriorMutable, rc::Id, ClassType, Encode,
-    Encoding,
+    Encoding, RefEncode,
+};
+use objc2_foundation::{
+    CGFloat, CGPoint, NSArray, NSError, NSInteger, NSObject, NSObjectProtocol, NSString,
 };
 
 use crate::{
@@ -400,8 +400,10 @@ pub struct AVCaptureWhiteBalanceGains {
 }
 
 unsafe impl Encode for AVCaptureWhiteBalanceGains {
-    const ENCODING: Encoding =
-        Encoding::Struct("AVCaptureWhiteBalanceGains", &[CGFloat::ENCODING, CGFloat::ENCODING, CGFloat::ENCODING]);
+    const ENCODING: Encoding = Encoding::Struct(
+        "AVCaptureWhiteBalanceGains",
+        &[CGFloat::ENCODING, CGFloat::ENCODING, CGFloat::ENCODING],
+    );
 }
 
 unsafe impl RefEncode for AVCaptureWhiteBalanceGains {
@@ -660,7 +662,8 @@ impl AVCaptureDeviceFormat {
 
     pub fn video_format_description(&self) -> CMVideoFormatDescription {
         unsafe {
-            let format_description: CMFormatDescriptionRef = msg_send![self, videoFormatDescription];
+            let format_description: CMFormatDescriptionRef =
+                msg_send![self, videoFormatDescription];
             CMVideoFormatDescription::wrap_under_get_rule(format_description)
         }
     }
