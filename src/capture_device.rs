@@ -248,7 +248,7 @@ impl AVCaptureDevice {
         unsafe { msg_send![self, lensAperture] }
     }
 
-    pub fn is_face_drive_auto_expoure_enabled(&self) -> bool {
+    pub fn is_face_drive_auto_exposure_enabled(&self) -> bool {
         unsafe { msg_send![self, isFaceDrivenAutoExposureEnabled] }
     }
 
@@ -268,11 +268,11 @@ impl AVCaptureDevice {
         unsafe { msg_send![self, exposureTargetBias] }
     }
 
-    pub fn minExposureTargetBias(&self) -> f32 {
+    pub fn min_exposure_target_bias(&self) -> f32 {
         unsafe { msg_send![self, minExposureTargetBias] }
     }
 
-    pub fn maxExposureTargetBias(&self) -> f32 {
+    pub fn max_exposure_target_bias(&self) -> f32 {
         unsafe { msg_send![self, maxExposureTargetBias] }
     }
 }
@@ -646,6 +646,45 @@ impl AVCaptureDeviceFormat {
 
     pub fn is_video_hdr_supported(&self) -> bool {
         unsafe { msg_send![self, isVideoHDRSupported] }
+    }
+}
+
+#[cfg(target_os = "ios")]
+impl AVCaptureDevice {
+    pub fn min_exposure_target_bias(&self) -> f32 {
+        unsafe { msg_send![self, minExposureTargetBias] }
+    }
+
+    pub fn min_exposure_duration(&self) -> CMTime {
+        unsafe { msg_send![self, minExposureDuration] }
+    }
+
+    pub fn max_exposure_duration(&self) -> CMTime {
+        unsafe { msg_send![self, maxExposureDuration] }
+    }
+
+    pub fn is_video_stabilization_supported(&self) -> bool {
+        unsafe { msg_send![self, isVideoStabilizationSupported] }
+    }
+
+    pub fn is_video_stabilization_enabled(&self) -> bool {
+        unsafe { msg_send![self, isVideoStabilizationEnabled] }
+    }
+
+    pub fn set_video_stabilization_enabled(&self, value: bool) -> bool {
+        unsafe { msg_send![self, setVideoStabilizationEnabled: value] }
+    }
+}
+
+pub type AVCaptureAutoFocusSystem = NSInteger;
+pub const AVCaptureAutoFocusSystemNone: AVCaptureAutoFocusSystem = 0;
+pub const AVCaptureAutoFocusSystemPhaseDetection: AVCaptureAutoFocusSystem = 1;
+pub const AVCaptureAutoFocusSystemContrastDetection: AVCaptureAutoFocusSystem = 2;
+
+#[cfg(target_os = "ios")]
+impl AVCaptureDeviceFormat {
+    pub fn auto_focus_system(&self) -> AVCaptureAutoFocusSystem {
+        unsafe { msg_send![self, autoFocusSystem] }
     }
 }
 
