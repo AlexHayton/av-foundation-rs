@@ -1,6 +1,6 @@
 use core_foundation::base::TCFType;
 use core_media::{
-    format_description::{CMFormatDescription, CMFormatDescriptionRef},
+    format_description::{CMFormatDescription, CMFormatDescriptionRef, CMVideoFormatDescription},
     time::CMTime,
 };
 use objc2_foundation::{
@@ -655,6 +655,13 @@ impl AVCaptureDeviceFormat {
         unsafe {
             let format_description: CMFormatDescriptionRef = msg_send![self, formatDescription];
             CMFormatDescription::wrap_under_get_rule(format_description)
+        }
+    }
+
+    pub fn video_format_description(&self) -> CMVideoFormatDescription {
+        unsafe {
+            let format_description: CMFormatDescriptionRef = msg_send![self, videoFormatDescription];
+            CMVideoFormatDescription::wrap_under_get_rule(format_description)
         }
     }
 
