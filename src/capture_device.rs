@@ -662,8 +662,7 @@ impl AVCaptureDeviceFormat {
 
     pub fn video_format_description(&self) -> CMVideoFormatDescription {
         unsafe {
-            let format_description: CMFormatDescriptionRef =
-                msg_send![self, videoFormatDescription];
+            let format_description: CMFormatDescriptionRef = msg_send![self, formatDescription];
             CMVideoFormatDescription::wrap_under_get_rule(format_description)
         }
     }
